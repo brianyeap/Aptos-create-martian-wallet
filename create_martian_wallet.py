@@ -1,5 +1,4 @@
 import time
-
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -132,6 +131,7 @@ def setup_wallet(amount):
         wait = WebDriverWait(driver, 20)
         initialise_wallet(driver, wait)
         while (amount > 0):
+            start_time = time.time()
             amount -= 1
             btn_swt = wait.until(
                 ec.visibility_of_element_located(
@@ -200,13 +200,13 @@ def setup_wallet(amount):
             with open(f"seeds/petra-{random.randint(1000000, 9999999)}.json", "w+") as outfile:
                 outfile.write(json_text)
             glob_num += 1
-            print(f'#{glob_num} created')
+            print(f'#{glob_num} Executed in: {round(time.time() - start_time)}S')
     except Exception as err:
         print(err)
 
 
-amount_needed = 100
-threads = 2
+amount_needed = 1000
+threads = 5
 def begin(amount_needed, threads):
     count = 0
     thread_list = []
