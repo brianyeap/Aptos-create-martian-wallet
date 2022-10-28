@@ -31,7 +31,6 @@ def switch_tab(driver):
             driver.switch_to.window(w)
 
 def initialise_wallet(driver, wait):
-    global glob_num
     address = ""
     seed_phrase = []
 
@@ -103,7 +102,6 @@ def initialise_wallet(driver, wait):
                 (By.XPATH, f'/html/body/div[1]/div/div[2]/form/div/div[2]/div/div[2]/div[{i}]/input')))
         inpt.send_keys(seed_phrase[5 + i])
         i += 1
-    print(seed_phrase)
 
     btn_cont = wait.until(
             ec.visibility_of_element_located(
@@ -135,6 +133,7 @@ def initialise_wallet(driver, wait):
 
 
 def setup_wallet(amount):
+    global glob_num
 
     try:
         chrome_options = Options()
@@ -213,9 +212,8 @@ def setup_wallet(amount):
             address = url[-1]
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
-            print(address, seed_phrase)
             json_text = json.dumps({"address":address, "seed_phrase":seed_phrase})
-            with open(f"petra-{random.randint(1000000, 9999999)}.json", "w") as outfile:
+            with open(f"seeds/petra-{random.randint(1000000, 9999999)}.json", "w+") as outfile:
                 outfile.write(json_text)
             glob_num += 1
             print(f'#{glob_num} created')
@@ -223,13 +221,13 @@ def setup_wallet(amount):
         print(err)
 
 
-amount_needed = 0
+amount_needed = 100
 threads = 2
 def begin(amount_needed, threads):
     count = 0
     thread_list = []
     while count < threads:
-        t = threading.Thread(target=setup_wallet, args=amount_needed/threads)
+        t = threading.Thread(target=setup_wallet, args=[int(amount_needed/threads)])
         thread_list.append(t)
         count += 1
         print(f'created thread: {count}/{threads}')
