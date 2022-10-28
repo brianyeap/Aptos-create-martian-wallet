@@ -26,3 +26,5 @@ wait = WebDriverWait(driver, 5)
 parent = driver.window_handles[0]
 
 driver.get('https://www.google.com')
+
+time.sleep(1000)
