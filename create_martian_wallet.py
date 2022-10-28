@@ -118,18 +118,7 @@ def initialise_wallet(driver, wait):
                 (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]')))
     btn_stngs.click()
 
-    btn_expl = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[7]/a/div')))
-    btn_expl.click()
-    driver.switch_to.window(driver.window_handles[-1])
-    url = driver.current_url.split('/')
-    print(url[-1])
-    driver.close()
-    driver.switch_to.window(driver.window_handles[0])
-
-
-    return ({"address":address, "seed_phrase":seed_phrase})
+    return ()
 
 
 def setup_wallet(amount):
@@ -200,18 +189,13 @@ def setup_wallet(amount):
                         (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]')))
             btn_stngs.click()
 
-
-            btn_expl = wait.until(
+            explorer_btn = wait.until(
                     ec.visibility_of_element_located(
-                        (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[7]/a/div')))
-            btn_expl.click()
-
+                        (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[7]/a')))
 
             driver.switch_to.window(driver.window_handles[-1])
-            url = driver.current_url.split('/')
+            url = explorer_btn.get_attribute('href').split('/')
             address = url[-1]
-            driver.close()
-            driver.switch_to.window(driver.window_handles[0])
             json_text = json.dumps({"address":address, "seed_phrase":seed_phrase})
             with open(f"seeds/petra-{random.randint(1000000, 9999999)}.json", "w+") as outfile:
                 outfile.write(json_text)
