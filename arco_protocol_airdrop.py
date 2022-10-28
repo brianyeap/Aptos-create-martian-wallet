@@ -1,5 +1,10 @@
+import json
 import time
 import random
+import os
+
+# Own file import
+from airdrop_devnet_apt import get_devnet_apt
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
@@ -15,27 +20,23 @@ import threading
 chrome_options = Options()
 chrome_options.add_extension('./src/Petra-Aptos-Wallet.crx')
 
-# Because I use M1 Mac it has error
-# driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-
-driver = webdriver.Chrome(service=Service('./src/chromedriver'), options=chrome_options)
-
 password = '12Testing34'
-temp_seed = 'repeat tortoise limb chest initial catalog worry velvet deputy bridge word manual'
-
-driver.maximize_window()
-wait = WebDriverWait(driver, 10)
-parent = driver.window_handles[0]
 
 
-def switch_tab():
+def debug():
+    print("paused to debug")
+    time.sleep(10000)
+
+
+def switch_tab(driver, parent):
     windows = driver.window_handles
     for w in windows:
         if w != parent:
             driver.switch_to.window(w)
 
 
-def wait_popup():
+def wait_popup(driver, parent):
+    wait = WebDriverWait(driver, 10)
     while True:
         if len(driver.window_handles) > 1:
             break
@@ -51,7 +52,9 @@ def wait_popup():
     approve_btn.click()
 
 
-def import_petra_wallet(seed_phrase):
+def import_petra_wallet(driver, seed_phrase):
+    wait = WebDriverWait(driver, 10)
+
     driver.get('chrome-extension://ejjladinnckdgjemekebdpeokbikhfci/index.html')
 
     import_wallet_btn = wait.until(
@@ -66,7 +69,7 @@ def import_petra_wallet(seed_phrase):
 
     seed_phrase_count = 1
     second_seed_phrase_count = 1
-    for seed_text in seed_phrase.split(' '):
+    for seed_text in seed_phrase:
         if seed_phrase_count <= 6:
             seed_text_input = wait.until(
                 ec.visibility_of_element_located(
@@ -133,8 +136,17 @@ def import_petra_wallet(seed_phrase):
     return 0
 
 
-def main_func():
-    if not import_petra_wallet(temp_seed):
+def main_func(seed_phrase):
+    # Because I use M1 Mac it has error
+    # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+    driver = webdriver.Chrome(service=Service('./src/chromedriver'), options=chrome_options)
+
+    driver.maximize_window()
+    wait = WebDriverWait(driver, 10)
+    parent = driver.window_handles[0]
+
+    if not import_petra_wallet(driver, seed_phrase):
         return 0
 
     driver.get('https://arcoprotocol.tech/')
@@ -149,7 +161,7 @@ def main_func():
             (By.XPATH, '/html/body/div[2]/div[3]/div[3]')))
     select_petra_wallet.click()
 
-    wait_popup()
+    wait_popup(driver, parent)
     driver.switch_to.window(parent)
 
     # Deposit
@@ -228,6 +240,50 @@ def main_func():
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
 
+    return 1
 
-if not main_func():
-    print("Error")
+
+if __name__ == '__main__':
+    seed_files_directory = 'seeds'
+    seed_files = os.listdir(seed_files_directory)
+    count = 0
+    total_needed = 1000
+    thread_times = 2
+
+
+    def temp_func(seed_phrase):
+        while True:
+            start_time = time.time()
+            if main_func(seed_phrase):
+                print(f'Executed in: {round(time.time() - start_time)}S')
+                break
+            else:
+                print('Retrying...')
+
+
+    while count < total_needed:
+        thread_list = []
+        temp_count = 0
+
+        if (total_needed - count) < thread_times:
+            thread_times = total_needed - count
+        while temp_count < thread_times:
+            with open(f'{seed_files_directory}/{seed_files[count]}') as seed_file:
+                data = json.load(seed_file)
+                apt_address = data['address']
+                apt_seed_array = data['seed_phrase']
+
+            t = threading.Thread(target=temp_func, args=[apt_seed_array])
+            thread_list.append(t)
+
+            count += 1
+            temp_count += 1
+            print(f'Count: {count}/{total_needed}')
+
+        for thread in thread_list:
+            thread.start()
+
+        for thread in thread_list:
+            thread.join()
+
+    print(f'Finished: {count}/{total_needed}')

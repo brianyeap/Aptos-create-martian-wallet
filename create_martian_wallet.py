@@ -22,12 +22,14 @@ def debug():
     print("paused to debug")
     time.sleep(10000)
 
+
 def switch_tab(driver):
     windows = driver.window_handles
     parent = driver.window_handles[0]
     for w in windows:
         if w != parent:
             driver.switch_to.window(w)
+
 
 def initialise_wallet(driver, wait):
     address = ""
@@ -37,53 +39,47 @@ def initialise_wallet(driver, wait):
     switch_tab(driver)
     driver.get('chrome-extension://ejjladinnckdgjemekebdpeokbikhfci/index.html')
 
-
     btn_create = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div/div/div/div/div[2]/a[1]/button')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div/div/div/div/div[2]/a[1]/button')))
     btn_create.click()
-
 
     wallet_password_field = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[1]/div[1]/div/input')))
     wallet_password_field.send_keys(password)
 
-
     wallet_password_field = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[1]/div[2]/div/input')))
     wallet_password_field.send_keys(password)
 
-
     tick = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[2]/label/span[1]')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[2]/label/span[1]')))
     tick.click()
 
-
     btn_cont = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[3]/div/div/button')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[3]/div/div/button')))
     btn_cont.click()
 
-
     btn_reveal_seed = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[2]/div/div[3]/div')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[2]/div/div[3]/div')))
     btn_reveal_seed.click()
-    
+
     seeds = wait.until(
-            ec.visibility_of_all_elements_located(
-                (By.CLASS_NAME, 'chakra-input__group')))
+        ec.visibility_of_all_elements_located(
+            (By.CLASS_NAME, 'chakra-input__group')))
 
     for seed_box in seeds:
         seed = seed_box.find_element(By.TAG_NAME, "input")
         seed_phrase.append(seed.get_attribute('value'))
-    
+
     btn_cont = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[3]/div/div/button')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[3]/div/div/button')))
     btn_cont.click()
 
     i = 1
@@ -103,18 +99,18 @@ def initialise_wallet(driver, wait):
         i += 1
 
     btn_cont = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[3]/div/div/button')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[3]/div/div/button')))
     btn_cont.click()
 
     btn_done = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[4]/div/div[2]/button[2]')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[4]/div/div[2]/button[2]')))
     btn_done.click()
 
     btn_stngs = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]')))
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]')))
     btn_stngs.click()
 
     return ()
@@ -130,14 +126,13 @@ def setup_wallet(amount):
         driver.maximize_window()
         wait = WebDriverWait(driver, 20)
         initialise_wallet(driver, wait)
-        while (amount > 0):
+        while amount > 0:
             start_time = time.time()
             amount -= 1
             btn_swt = wait.until(
                 ec.visibility_of_element_located(
                     (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[8]/a/div/div/div[1]')))
             btn_swt.click()
-
 
             btn_add = wait.until(
                 ec.visibility_of_element_located(
@@ -149,10 +144,9 @@ def setup_wallet(amount):
                     (By.XPATH, '/html/body/div[1]/div/div[2]/div/button[1]')))
             btn_new.click()
 
-
             btn_reveal_seed = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div[1]/div[1]/div/div[2]/div/div[3]/div')))
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[2]/form/div[1]/div[1]/div/div[2]/div/div[3]/div')))
             btn_reveal_seed.click()
 
             seed_phrase = []
@@ -160,7 +154,8 @@ def setup_wallet(amount):
             while i < 7:
                 inpt = wait.until(
                     ec.visibility_of_element_located(
-                        (By.XPATH, f'/html/body/div[1]/div/div[2]/form/div[1]/div[1]/div/div[2]/div/div[1]/div[{i}]/input')))
+                        (By.XPATH,
+                         f'/html/body/div[1]/div/div[2]/form/div[1]/div[1]/div/div[2]/div/div[1]/div[{i}]/input')))
                 seed_phrase.append(inpt.get_attribute('value'))
                 i += 1
 
@@ -168,35 +163,34 @@ def setup_wallet(amount):
             while i < 7:
                 inpt = wait.until(
                     ec.visibility_of_element_located(
-                        (By.XPATH, f'/html/body/div[1]/div/div[2]/form/div[1]/div[1]/div/div[2]/div/div[2]/div[{i}]/input')))
+                        (By.XPATH,
+                         f'/html/body/div[1]/div/div[2]/form/div[1]/div[1]/div/div[2]/div/div[2]/div[{i}]/input')))
                 seed_phrase.append(inpt.get_attribute('value'))
                 i += 1
 
-
             btn_cont = wait.until(
-                    ec.visibility_of_element_located(
-                        (By.XPATH, '/html/body/div[1]/div/div[2]/form/div[1]/div[2]/button')))
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[2]/form/div[1]/div[2]/button')))
             btn_cont.click()
 
             btn_done = wait.until(
-                        ec.visibility_of_element_located(
-                            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div[2]/div/div[2]/button[2]')))
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[2]/form/div[2]/div/div[2]/button[2]')))
             btn_done.click()
 
-
             btn_stngs = wait.until(
-                    ec.visibility_of_element_located(
-                        (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]')))
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]')))
             btn_stngs.click()
 
             explorer_btn = wait.until(
-                    ec.visibility_of_element_located(
-                        (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[7]/a')))
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[7]/a')))
 
             driver.switch_to.window(driver.window_handles[-1])
             url = explorer_btn.get_attribute('href').split('/')
             address = url[-1]
-            json_text = json.dumps({"address":address, "seed_phrase":seed_phrase})
+            json_text = json.dumps({"address": address, "seed_phrase": seed_phrase})
             with open(f"seeds/petra-{random.randint(1000000, 9999999)}.json", "w+") as outfile:
                 outfile.write(json_text)
             glob_num += 1
@@ -207,11 +201,13 @@ def setup_wallet(amount):
 
 amount_needed = 1000
 threads = 5
+
+
 def begin(amount_needed, threads):
     count = 0
     thread_list = []
     while count < threads:
-        t = threading.Thread(target=setup_wallet, args=[int(amount_needed/threads)])
+        t = threading.Thread(target=setup_wallet, args=[int(amount_needed / threads)])
         thread_list.append(t)
         count += 1
         print(f'created thread: {count}/{threads}')
@@ -223,4 +219,6 @@ def begin(amount_needed, threads):
         thread.join()
     print("JOB COMPLETE")
 
-begin(amount_needed, threads)
+
+if __name__ == '__main__':
+    begin(amount_needed, threads)
