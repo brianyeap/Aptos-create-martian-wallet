@@ -193,7 +193,7 @@ def main_func(seed_phrase):
     arco_deposit_input = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
-    arco_deposited_amount = random.randint(3, 9)
+    arco_deposited_amount = random.randint(2, 9)
     arco_deposit_input.send_keys(arco_deposited_amount)
 
     arco_deposit_supply_btn = wait.until(
