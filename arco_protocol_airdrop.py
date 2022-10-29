@@ -2,6 +2,7 @@ import json
 import time
 import random
 import os
+import selenium
 
 # Own file import
 from airdrop_devnet_apt import get_devnet_apt
@@ -46,94 +47,113 @@ def wait_popup(driver, parent):
         if w != parent:
             driver.switch_to.window(w)
 
-    approve_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[3]/button[2]')))
-    approve_btn.click()
+    while True:
+        try:
+            windows = driver.window_handles
+            if len(windows) == 1:
+                break
+
+            approve_btn = wait.until(
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[3]/button[2]')))
+            approve_btn.click()
+        except selenium.common.exceptions.NoSuchWindowException:
+            break
+        except AttributeError:
+            pass
+        except Exception as e:
+            print(e)
+
+    driver.switch_to.window(parent)
 
 
 def import_petra_wallet(driver, seed_phrase):
-    wait = WebDriverWait(driver, 10)
+    try:
+        wait = WebDriverWait(driver, 10)
 
-    driver.get('chrome-extension://ejjladinnckdgjemekebdpeokbikhfci/index.html')
+        driver.get('chrome-extension://ejjladinnckdgjemekebdpeokbikhfci/index.html')
 
-    import_wallet_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div/div/div/div/div[2]/a[2]/button')))
-    import_wallet_btn.click()
+        import_wallet_btn = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div/div/div/div/div[2]/a[2]/button')))
+        import_wallet_btn.click()
 
-    import_mnemonic_btn_wallet_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/button[2]')))
-    import_mnemonic_btn_wallet_btn.click()
+        import_mnemonic_btn_wallet_btn = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/button[2]')))
+        import_mnemonic_btn_wallet_btn.click()
 
-    seed_phrase_count = 1
-    second_seed_phrase_count = 1
-    for seed_text in seed_phrase:
-        if seed_phrase_count <= 6:
-            seed_text_input = wait.until(
+        seed_phrase_count = 1
+        second_seed_phrase_count = 1
+        for seed_text in seed_phrase:
+            if seed_phrase_count <= 6:
+                seed_text_input = wait.until(
+                    ec.visibility_of_element_located(
+                        (By.XPATH,
+                         f'/html/body/div[1]/div/div[2]/form/div/div/div/div[1]/div[{seed_phrase_count}]/input')))
+                seed_phrase_count += 1
+            else:
+                seed_text_input = wait.until(
+                    ec.visibility_of_element_located(
+                        (By.XPATH,
+                         f'/html/body/div[1]/div/div[2]/form/div/div/div/div[2]/div[{second_seed_phrase_count}]/input')))
+                second_seed_phrase_count += 1
+            seed_text_input.send_keys(seed_text)
+
+        continue_btn = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[3]/button')))
+        continue_btn.click()
+
+        enter_password_input = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[1]/div[1]/div/input')))
+        enter_password_input.send_keys(password)
+
+        confirm_password_input = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[1]/div[2]/div/input')))
+        confirm_password_input.send_keys(password)
+
+        agree_terms_checkbox = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[2]/label/span[1]')))
+        agree_terms_checkbox.click()
+
+        continue_btn = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[3]/button')))
+        continue_btn.click()
+
+        petra_wallet_home = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[1]/div/div[1]/div/p')))
+
+        if petra_wallet_home.text == 'Home':
+            petra_wallet_settings_btn = wait.until(
                 ec.visibility_of_element_located(
-                    (By.XPATH, f'/html/body/div[1]/div/div[2]/form/div/div/div/div[1]/div[{seed_phrase_count}]/input')))
-            seed_phrase_count += 1
-        else:
-            seed_text_input = wait.until(
+                    (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]/a')))
+            petra_wallet_settings_btn.click()
+
+            petra_wallet_network_btn = wait.until(
                 ec.visibility_of_element_located(
-                    (By.XPATH,
-                     f'/html/body/div[1]/div/div[2]/form/div/div/div/div[2]/div[{second_seed_phrase_count}]/input')))
-            second_seed_phrase_count += 1
-        seed_text_input.send_keys(seed_text)
+                    (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[2]/a')))
+            petra_wallet_network_btn.click()
 
-    continue_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[3]/button')))
-    continue_btn.click()
+            petra_wallet_network_devnet_btn = wait.until(
+                ec.visibility_of_element_located(
+                    (By.XPATH, '/html/body/div[1]/div/div[2]/div/div/div[1]/label[3]')))
 
-    enter_password_input = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[1]/div[1]/div/input')))
-    enter_password_input.send_keys(password)
+            while True:
+                petra_wallet_network_devnet_btn.click()
+                if 'data-checked' in petra_wallet_network_devnet_btn.get_attribute("innerHTML"):
+                    break
 
-    confirm_password_input = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[1]/div[2]/div/input')))
-    confirm_password_input.send_keys(password)
-
-    agree_terms_checkbox = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[2]/form/div/div[2]/label/span[1]')))
-    agree_terms_checkbox.click()
-
-    continue_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[3]/button')))
-    continue_btn.click()
-
-    petra_wallet_home = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/div/div[1]/div/div[1]/div/p')))
-
-    if petra_wallet_home.text == 'Home':
-        petra_wallet_settings_btn = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[3]/div/div[4]/a')))
-        petra_wallet_settings_btn.click()
-
-        petra_wallet_network_btn = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[2]/div[1]/div[2]/a')))
-        petra_wallet_network_btn.click()
-
-        petra_wallet_network_devnet_btn = wait.until(
-            ec.visibility_of_element_located(
-                (By.XPATH, '/html/body/div[1]/div/div[2]/div/div/div[1]/label[3]')))
-
-        while True:
-            petra_wallet_network_devnet_btn.click()
-            if 'data-checked' in petra_wallet_network_devnet_btn.get_attribute("innerHTML"):
-                break
-
-        return 1
-    return 0
+            return 1
+        return 0
+    except Exception as e:
+        print(e)
+        return 0
 
 
 def main_func(seed_phrase):
@@ -162,8 +182,8 @@ def main_func(seed_phrase):
     select_petra_wallet.click()
 
     wait_popup(driver, parent)
-    driver.switch_to.window(parent)
 
+    time.sleep(3)
     # Deposit
     arco_deposit_btn = wait.until(
         ec.visibility_of_element_located(
@@ -173,15 +193,20 @@ def main_func(seed_phrase):
     arco_deposit_input = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
-    arco_deposit_input.send_keys(random.randint(25, 30))
+    arco_deposited_amount = random.randint(3, 9)
+    arco_deposit_input.send_keys(arco_deposited_amount)
 
     arco_deposit_supply_btn = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
-    # arco_deposit_supply_btn.click()
+    arco_deposit_supply_btn.click()
+
+    wait_popup(driver, parent)
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
+
+    time.sleep(3)
 
     # Borrow
     arco_borrow_btn = wait.until(
@@ -192,34 +217,20 @@ def main_func(seed_phrase):
     arco_borrow_input = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
-    arco_borrow_input.send_keys(random.randint(25, 30))
+    acro_borrowed_amount = int(random.uniform(float(arco_deposited_amount) * 0.6, float(arco_deposited_amount) * 0.8))
+    arco_borrow_input.send_keys(acro_borrowed_amount)
 
     arco_borrow_supply_btn = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
-    # arco_borrow_supply_btn.click()
+    arco_borrow_supply_btn.click()
+
+    wait_popup(driver, parent)
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
 
-    # withdraw
-    arco_withdraw_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div/div/main/div/div[2]/div[3]/div/div/table/tbody/tr[1]/td[5]/button[1]')))
-    arco_withdraw_btn.click()
-
-    arco_withdraw_input = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
-    arco_withdraw_input.send_keys(random.randint(25, 30))
-
-    arco_withdraw_supply_btn = wait.until(
-        ec.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[2]/div[3]/button')))
-    # arco_withdraw_supply_btn.click()
-
-    # Exit modal
-    driver.find_element(By.CSS_SELECTOR, ".icon").click()
+    time.sleep(3)
 
     # repay
     arco_repay_btn = wait.until(
@@ -230,15 +241,46 @@ def main_func(seed_phrase):
     arco_repay_input = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
-    arco_repay_input.send_keys(random.randint(25, 30))
+    arco_repay_input.send_keys(int(acro_borrowed_amount))
 
     arco_repay_supply_btn = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
-    # arco_repay_supply_btn.click()
+    arco_repay_supply_btn.click()
+
+    wait_popup(driver, parent)
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
+
+    time.sleep(3)
+
+    # withdraw
+    arco_withdraw_btn = wait.until(
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div/div/main/div/div[2]/div[3]/div/div/table/tbody/tr[1]/td[5]/button[1]')))
+    arco_withdraw_btn.click()
+
+    arco_withdraw_max = wait.until(
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[2]/div[3]/div[3]/div/div[1]/p[2]')))
+
+    arco_withdraw_input = wait.until(
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
+    arco_withdraw_input.send_keys(int(float(arco_withdraw_max.text)))
+
+    arco_withdraw_supply_btn = wait.until(
+        ec.visibility_of_element_located(
+            (By.XPATH, '/html/body/div[2]/div[3]/button')))
+    arco_withdraw_supply_btn.click()
+
+    wait_popup(driver, parent)
+
+    # Exit modal
+    driver.find_element(By.CSS_SELECTOR, ".icon").click()
+
+    time.sleep(3)
 
     return 1
 
@@ -248,7 +290,7 @@ if __name__ == '__main__':
     seed_files = os.listdir(seed_files_directory)
     count = 0
     total_needed = 1000
-    thread_times = 2
+    thread_times = 1
 
 
     def temp_func(seed_phrase):
