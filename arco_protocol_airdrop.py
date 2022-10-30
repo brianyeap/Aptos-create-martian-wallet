@@ -3,7 +3,7 @@ import time
 import random
 import os
 import selenium
-
+import time
 # Own file import
 from airdrop_devnet_apt import get_devnet_apt
 
@@ -155,6 +155,31 @@ def import_petra_wallet(driver, seed_phrase):
         print(e)
         return 0
 
+def get_allowed_amount(driver):
+    driver.get('chrome-extension://ejjladinnckdgjemekebdpeokbikhfci/index.html')
+    wait = WebDriverWait(driver, 10)
+    try:
+        amount = wait.until(
+            ec.visibility_of_element_located(
+                (By.XPATH, '/html/body/div[1]/div/div[2]/div/div[2]/div/div/div/div[2]/p[2]')))
+        amount = int(amount.text[:-4])
+    except Exception as err:
+        print(f"Error in get_wallet_amount {err}")
+        amount = 0
+    if (amount == 0):
+        return (0)
+    elif (amount > 200):
+        return (int(amount/random.randint(6, 18)))
+    elif (amount > 100):
+        return (int(amount/random.randint(4, 10)))
+    elif (amount > 50):
+        return (int(amount/random.randint(2, 10)))
+    elif (amount > 10):
+        return (int(amount/random.randint(2, 5)))
+    elif (amount > 3):
+        return (int(amount/random.randint(2,4)))
+    else:
+        return (0)
 
 def main_func(seed_phrase):
     # Because I use M1 Mac it has error
@@ -168,9 +193,9 @@ def main_func(seed_phrase):
 
     if not import_petra_wallet(driver, seed_phrase):
         return 0
-
+    wallet_amount = get_allowed_amount(driver)
+    
     driver.get('https://arcoprotocol.tech/')
-
     connect_wallet_btn = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div/div/div/div[2]/div[2]/div/button')))
@@ -193,7 +218,7 @@ def main_func(seed_phrase):
     arco_deposit_input = wait.until(
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/div[2]/div/div/input')))
-    arco_deposited_amount = random.randint(2, 9)
+    arco_deposited_amount = wallet_amount
     arco_deposit_input.send_keys(arco_deposited_amount)
 
     arco_deposit_supply_btn = wait.until(
