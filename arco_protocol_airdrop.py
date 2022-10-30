@@ -314,6 +314,7 @@ def main_func(seed_phrase):
 if __name__ == '__main__':
     seed_files_directory = 'seeds'
     seed_files = os.listdir(seed_files_directory)
+    random.shuffle(seed_files)
     count = 0
     total_needed = 1000
     thread_times = 1
