@@ -194,7 +194,8 @@ def main_func(seed_phrase):
     if not import_petra_wallet(driver, seed_phrase):
         return 0
     wallet_amount = get_allowed_amount(driver)
-    
+    if wallet_amount == 0:
+        return 0
     driver.get('https://arcoprotocol.tech/')
     connect_wallet_btn = wait.until(
         ec.visibility_of_element_located(
