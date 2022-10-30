@@ -4,8 +4,6 @@ import random
 import os
 import selenium
 import time
-# Own file import
-from airdrop_devnet_apt import get_devnet_apt
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
@@ -53,6 +51,9 @@ def wait_popup(driver, parent):
             if len(windows) == 1:
                 break
 
+            if 'Transaction error' in driver.page_source:
+                return 0
+
             approve_btn = wait.until(
                 ec.visibility_of_element_located(
                     (By.XPATH, '/html/body/div[1]/div/div[3]/button[2]')))
@@ -65,6 +66,8 @@ def wait_popup(driver, parent):
             print(e)
 
     driver.switch_to.window(parent)
+
+    return 1
 
 
 def import_petra_wallet(driver, seed_phrase):
@@ -155,6 +158,7 @@ def import_petra_wallet(driver, seed_phrase):
         print(e)
         return 0
 
+
 def get_allowed_amount(driver):
     driver.get('chrome-extension://ejjladinnckdgjemekebdpeokbikhfci/index.html')
     wait = WebDriverWait(driver, 10)
@@ -166,22 +170,28 @@ def get_allowed_amount(driver):
     except Exception as err:
         print(f"Error in get_wallet_amount {err}")
         amount = 0
-    if (amount == 0):
-        return (0)
-    elif (amount > 200):
-        return (int(amount/random.randint(6, 18)))
-    elif (amount > 100):
-        return (int(amount/random.randint(4, 10)))
-    elif (amount > 50):
-        return (int(amount/random.randint(2, 10)))
-    elif (amount > 10):
-        return (int(amount/random.randint(2, 5)))
-    elif (amount > 3):
-        return (int(amount/random.randint(2,4)))
+    if amount == 0:
+        return 0
+    elif amount > 200:
+        return int(amount / random.randint(6, 18))
+    elif amount > 100:
+        return int(amount / random.randint(4, 10))
+    elif amount > 50:
+        return int(amount / random.randint(2, 10))
+    elif amount > 10:
+        return int(amount / random.randint(2, 5))
+    elif amount > 3:
+        return int(amount / random.randint(2, 4))
     else:
-        return (0)
+        return 0
+
 
 def main_func(seed_phrase):
+    ranSleepSec = random.randint(0, 40)
+    print(f'Sleeping for {ranSleepSec}S ...')
+    time.sleep(ranSleepSec)
+    print(f'Job Started!')
+
     # Because I use M1 Mac it has error
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
@@ -207,7 +217,8 @@ def main_func(seed_phrase):
             (By.XPATH, '/html/body/div[2]/div[3]/div[3]')))
     select_petra_wallet.click()
 
-    wait_popup(driver, parent)
+    if not wait_popup(driver, parent):
+        return 0
 
     time.sleep(3)
     # Deposit
@@ -227,7 +238,8 @@ def main_func(seed_phrase):
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_deposit_supply_btn.click()
 
-    wait_popup(driver, parent)
+    if not wait_popup(driver, parent):
+        return 0
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
@@ -251,7 +263,8 @@ def main_func(seed_phrase):
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_borrow_supply_btn.click()
 
-    wait_popup(driver, parent)
+    if not wait_popup(driver, parent):
+        return 0
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
@@ -274,7 +287,8 @@ def main_func(seed_phrase):
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_repay_supply_btn.click()
 
-    wait_popup(driver, parent)
+    if not wait_popup(driver, parent):
+        return 0
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
@@ -301,7 +315,8 @@ def main_func(seed_phrase):
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_withdraw_supply_btn.click()
 
-    wait_popup(driver, parent)
+    if not wait_popup(driver, parent):
+        return 0
 
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
