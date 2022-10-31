@@ -200,24 +200,7 @@ def main_func(seed_phrase):
 
     # Because I use M1 Mac it has error
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    prox = Proxy()
-    proxies = ["88.218.72.87:9026",
-                "88.218.72.51:9935",
-                "88.218.75.205:9587",
-                "88.218.73.136:9714",
-                "88.218.74.162:9250",
-                "88.218.75.21:9773"]
-    rand_prox = random.choice(proxies)
-    prox.proxy_type = ProxyType.MANUAL
-    prox.http_proxy = rand_prox
-    prox.socks_proxy = rand_prox
-    prox.ssl_proxy = rand_prox
-    prox.socks_version = 5
-
-    capabilities = webdriver.DesiredCapabilities.CHROME
-    prox.add_to_capabilities(capabilities)
-
-    driver = webdriver.Chrome(service=Service('./src/chromedriver'), options=chrome_options, desired_capabilities=capabilities)
+    driver = webdriver.Chrome(service=Service('./src/chromedriver'), options=chrome_options)
 
     driver.maximize_window()
     wait = WebDriverWait(driver, 10)
