@@ -15,6 +15,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from cryptography.fernet import Fernet
 import threading
+from selenium.webdriver.common.proxy import Proxy, ProxyType
 
 chrome_options = Options()
 chrome_options.add_extension('./src/Petra-Aptos-Wallet.crx')
@@ -51,8 +52,8 @@ def wait_popup(driver, parent):
             if len(windows) == 1:
                 break
 
-            if 'Transaction error' in driver.page_source:
-                return 0
+            if ('Transaction error' in driver.page_source):
+                break
 
             approve_btn = wait.until(
                 ec.visibility_of_element_located(
@@ -63,7 +64,9 @@ def wait_popup(driver, parent):
         except AttributeError:
             pass
         except Exception as e:
-            print(e)
+            print(f"AN ERROR HERE {e}")
+        time.sleep(1)
+        
 
     driver.switch_to.window(parent)
 
@@ -147,10 +150,16 @@ def import_petra_wallet(driver, seed_phrase):
                 ec.visibility_of_element_located(
                     (By.XPATH, '/html/body/div[1]/div/div[2]/div/div/div[1]/label[3]')))
 
+            i = 0
             while True:
+                i += 1
                 petra_wallet_network_devnet_btn.click()
                 if 'data-checked' in petra_wallet_network_devnet_btn.get_attribute("innerHTML"):
                     break
+                time.sleep(1)
+                if (i == 30):
+                    driver.close()
+                    return (0)
 
             return 1
         return 0
@@ -166,7 +175,7 @@ def get_allowed_amount(driver):
         amount = wait.until(
             ec.visibility_of_element_located(
                 (By.XPATH, '/html/body/div[1]/div/div[2]/div/div[2]/div/div/div/div[2]/p[2]')))
-        amount = int(amount.text[:-4])
+        amount = int(float(amount.text[:-4]))
     except Exception as err:
         print(f"Error in get_wallet_amount {err}")
         amount = 0
@@ -187,20 +196,32 @@ def get_allowed_amount(driver):
 
 
 def main_func(seed_phrase):
-    ranSleepSec = random.randint(0, 40)
-    print(f'Sleeping for {ranSleepSec}S ...')
-    time.sleep(ranSleepSec)
     print(f'Job Started!')
 
     # Because I use M1 Mac it has error
     # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    prox = Proxy()
+    proxies = ["88.218.72.87:9026",
+                "88.218.72.51:9935",
+                "88.218.75.205:9587",
+                "88.218.73.136:9714",
+                "88.218.74.162:9250",
+                "88.218.75.21:9773"]
+    rand_prox = random.choice(proxies)
+    prox.proxy_type = ProxyType.MANUAL
+    prox.http_proxy = rand_prox
+    prox.socks_proxy = rand_prox
+    prox.ssl_proxy = rand_prox
+    prox.socks_version = 5
 
-    driver = webdriver.Chrome(service=Service('./src/chromedriver'), options=chrome_options)
+    capabilities = webdriver.DesiredCapabilities.CHROME
+    prox.add_to_capabilities(capabilities)
+
+    driver = webdriver.Chrome(service=Service('./src/chromedriver'), options=chrome_options, desired_capabilities=capabilities)
 
     driver.maximize_window()
     wait = WebDriverWait(driver, 10)
     parent = driver.window_handles[0]
-
     if not import_petra_wallet(driver, seed_phrase):
         return 0
     wallet_amount = get_allowed_amount(driver)
@@ -216,10 +237,9 @@ def main_func(seed_phrase):
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/div[3]')))
     select_petra_wallet.click()
-
     if not wait_popup(driver, parent):
+        driver.close()
         return 0
-
     time.sleep(3)
     # Deposit
     arco_deposit_btn = wait.until(
@@ -237,10 +257,9 @@ def main_func(seed_phrase):
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_deposit_supply_btn.click()
-
     if not wait_popup(driver, parent):
+        driver.close()
         return 0
-
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
 
@@ -262,10 +281,9 @@ def main_func(seed_phrase):
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_borrow_supply_btn.click()
-
     if not wait_popup(driver, parent):
+        driver.close()
         return 0
-
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
 
@@ -286,8 +304,8 @@ def main_func(seed_phrase):
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_repay_supply_btn.click()
-
     if not wait_popup(driver, parent):
+        driver.close()
         return 0
 
     # Exit modal
@@ -314,17 +332,15 @@ def main_func(seed_phrase):
         ec.visibility_of_element_located(
             (By.XPATH, '/html/body/div[2]/div[3]/button')))
     arco_withdraw_supply_btn.click()
-
     if not wait_popup(driver, parent):
+        driver.close()
         return 0
-
     # Exit modal
     driver.find_element(By.CSS_SELECTOR, ".icon").click()
-
+    driver.close()
     time.sleep(3)
 
     return 1
-
 
 if __name__ == '__main__':
     seed_files_directory = 'seeds'
