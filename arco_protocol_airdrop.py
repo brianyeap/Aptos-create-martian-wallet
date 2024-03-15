@@ -66,7 +66,6 @@ def wait_popup(driver, parent):
         except Exception as e:
             print(f"AN ERROR HERE {e}")
         time.sleep(1)
-        
 
     driver.switch_to.window(parent)
 
@@ -325,13 +324,14 @@ def main_func(seed_phrase):
 
     return 1
 
+
 if __name__ == '__main__':
     seed_files_directory = 'seeds'
     seed_files = os.listdir(seed_files_directory)
     random.shuffle(seed_files)
     count = 0
     total_needed = 1000
-    thread_times = 1
+    thread_times = 5
 
 
     def temp_func(seed_phrase):
